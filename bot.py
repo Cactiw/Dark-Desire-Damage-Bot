@@ -54,7 +54,7 @@ second_twink = Twink("☘", "attack")
 third_twink = Twink("🐢", "attack")
 forth_twink = Twink("🖤", "defense")
 
-twinks = {534572692 : test_twink, 444404089:first_twink, 536014412:second_twink, 508872919:third_twink, 412039566:forth_twink, 231900398 : main_twink}#
+twinks = {534572692 : test_twink, 444404089:first_twink, 536014412:second_twink, 508872919:third_twink, 412039566:forth_twink}#, 231900398 : main_twink}#
 
 current_battle_stats = None
 
@@ -199,11 +199,10 @@ def instant_report(bot, update, user_data):
         return
 
     string = results.partition("{0}".format(castle))[2].partition("💰")[0]
-    while string.find(" ") != -1:
-        string = string.partition(" ")[2]
-        #print(string)
-
     significant_advantage = 1 if "😎" in string else 0
+    string = string.split(" ")
+    string = string[len(string) - 1]
+
 
     gold_castle = int(string)
     if gold_castle < 0:
@@ -244,6 +243,7 @@ def instant_report(bot, update, user_data):
 
 def send_mid_results(bot, job):
     response = "Результаты за прошедшую битву:\n"
+    castles.sort(key = lambda curr:report_by_castles.get(curr).damage if report_by_castles.get(curr).damage is not None else 0, reverse=True)
     for castle in castles:
         current = report_by_castles.get(castle)
         response += "{0} {1} ".format(current.castle, castle_status.get(current.status))
@@ -252,7 +252,7 @@ def send_mid_results(bot, job):
         else:
             response += "⚔: <b>{0:.2f}</b>\n".format(current.damage) if current.status == "failed" else "🛡: <b>{0:.2f}</b>\n".format(current.damage)
     bot.send_message(chat_id=admin_user_id, text = response, parse_mode='HTML')
-    #bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
+    bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
 
 
 def skip(bot, update):
