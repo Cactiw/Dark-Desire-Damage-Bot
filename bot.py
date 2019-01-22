@@ -242,6 +242,7 @@ def instant_report(bot, update, user_data):
 
 
 def send_mid_results(bot, job):
+    global send_to_mid
     response = "Результаты за прошедшую битву:\n"
     castles.sort(key = lambda curr:report_by_castles.get(curr).damage if report_by_castles.get(curr).damage is not None else 0, reverse=True)
     for castle in castles:
@@ -253,10 +254,14 @@ def send_mid_results(bot, job):
             response += "⚔: <b>{0:.2f}</b>\n".format(current.damage) if current.status == "failed" else "🛡: <b>{0:.2f}</b>\n".format(current.damage)
     bot.send_message(chat_id=admin_user_id, text = response, parse_mode='HTML')
     bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
+    send_to_mid = None
 
 
 def skip(bot, update):
     logging.info("skipped message from user @{0}, user id = {1}".format(update.message.from_user.username, update.message.from_user.id))
+    bot.send_message(chat_id=admin_user_id, text = "skipped message from user @{0}, "
+                                                   "user id = {1}".format(update.message.from_user.username,
+                                                                          update.message.from_user.id))
     return 0
 
 def unknown_text(bot, update, user_data):
