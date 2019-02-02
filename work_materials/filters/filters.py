@@ -45,8 +45,18 @@ class Filter_Report(BaseFilter):
             if dispatcher.user_data.get(message.from_user.id) is None:
                 print("User_data is None, id =", message.from_user.id)
                 print(message.text)
-                dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start или")
+                dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start")
             return dispatcher.user_data.get(message.from_user.id).get("status") == "results" and message.text.find("Твои результаты в бою:") != -1
+
+class FilterDDGReport(BaseFilter):
+    def filter(self, message):
+        if message.text:
+            if dispatcher.user_data.get(message.from_user.id) is None:
+                print("User_data is None, id =", message.from_user.id)
+                print(message.text)
+                dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start")
+            return dispatcher.user_data.get(message.from_user.id).get("status") == "results" and message.text.find("DDG:") == 0
+
 
 
 
@@ -55,6 +65,7 @@ filter_is_not_allowed = FilterIsNotAllowed()
 filter_castle = Filter_Castle()
 filter_results = Filter_Results()
 filter_report = Filter_Report()
+filter_ddg_report = FilterDDGReport()
 
 filter_set_results = Filter_Set_Results()
 filter_instant_report = Filter_Instant_Report()
