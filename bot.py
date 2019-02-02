@@ -306,7 +306,7 @@ def send_mid_results(bot, job):
         else:
             response += "⚔: <b>{0:.2f}</b> k\n".format(current.damage/1000) if current.status == "failed" else "🛡: <b>{0:.2f} k</b>\n".format(current.damage/1000)
     bot.send_message(chat_id=admin_user_id, text = response, parse_mode='HTML')
-    #bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
+    bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
     send_to_mid = None
 
 def pult(bot, update):
