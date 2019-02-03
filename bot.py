@@ -1,17 +1,18 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, BaseFilter
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, BaseFilter, CallbackQueryHandler
 
 from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
 
-import logging, datetime
+import logging, datetime, traceback
 
 import work_materials.globals as globals
 
 from work_materials.globals import *
 from work_materials.filters.filters import *
-from libs.pult import build_pult
+from libs.pult import rebuild_pult
+from libs.twink import Twink
 
 
 #   Выставляем логгироввание
@@ -26,15 +27,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 report_by_castles = {}
+pult_status = {"twink" : -1, "target" : -1}
 
 
-
-class Twink:
-
-    def __init__(self, castle, target, username = None):
-        self.castle = castle
-        self.target = target
-        self.username = username
 
 
 class Castle_report:
@@ -309,9 +304,63 @@ def send_mid_results(bot, job):
     bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
     send_to_mid = None
 
-def pult(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text = "{0}".format(datetime.datetime.now(tz=moscow_tz)), reply_markup=build_pult())
 
+def pult(bot, update):
+    response = "Текущие цели:\n"
+    for key in twinks:
+        twink = twinks.get(key)
+        response += "<b>{0:<25}</b> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target)
+    bot.send_message(chat_id=update.message.chat_id, text = response + "\n{0}".format(datetime.datetime.now(tz=moscow_tz)),
+                     reply_markup=rebuild_pult("default", None), parse_mode='HTML')
+
+
+def pult_twink_callback(bot, update):
+    mes = update.callback_query.message
+    id = int(update.callback_query.data.split()[1])
+    new_markup = rebuild_pult("change_twink", id)
+    pult_status.update({"twink": id})
+    edit_pult(bot=bot, chat_id=mes.chat_id, message_id=mes.message_id, reply_markup=new_markup,
+              callback_query_id=update.callback_query.id)
+
+
+def pult_castles_callback(bot, update):
+    mes = update.callback_query.message
+    new_target = int(update.callback_query.data[2:])
+    new_markup = rebuild_pult("change_target", new_target)
+    pult_status.update({ "target" : new_target })
+    edit_pult(bot = bot, chat_id=mes.chat_id, message_id=mes.message_id, reply_markup=new_markup, callback_query_id=update.callback_query.id)
+
+def pult_ok_callback(bot, update):
+    pass
+
+
+def pult_callback(bot, update):
+    data = update.callback_query.data
+    if data.find("pt") == 0:
+        pult_twink_callback(bot, update)
+        return
+    if data.find("pc") == 0:
+        pult_castles_callback(bot, update)
+        return
+    if data.find("pok") == 0:
+        pult_ok_callback(bot, update)
+        return
+
+
+def edit_pult(bot, chat_id, message_id, reply_markup, callback_query_id):
+    try:
+        bot.editMessageReplyMarkup(chat_id=chat_id, message_id=message_id, reply_markup=reply_markup)
+    except BadRequest:
+        pass
+    except TelegramError:
+        logging.error(traceback.format_exc)
+    finally:
+        bot.answerCallbackQuery(callback_query_id=callback_query_id)
+
+def inline_callback(bot, update):
+    if update.callback_query.data.find("p") == 0:
+        pult_callback(bot, update)
+        return
 
 def twinks_load():
     logging.info("Loading twinks...")
@@ -355,6 +404,7 @@ dispatcher.add_handler(MessageHandler(Filters.text & (filter_report | filter_ddg
 
 dispatcher.add_handler(CommandHandler('set_stats', enable_stats_flag, pass_user_data=True, filters=Filters.user(user_id=admin_user_id)))
 
+dispatcher.add_handler(CallbackQueryHandler(inline_callback, pass_update_queue=False, pass_user_data=False))
 
 # ------------------------------------------------------------------------------------------------------------------
 dispatcher.add_handler(MessageHandler(Filters.text, unknown_text, pass_user_data=True))
