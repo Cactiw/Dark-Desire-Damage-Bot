@@ -163,7 +163,8 @@ def calculate_damage(bot, update, user_data):
 
 
     string = results.partition("{0}".format(castle))[2].partition("💰")[0]
-    significant_advantage = 1 if "😎" in string else 0
+    #significant_advantage = 1 if "😎" in string else 0          #   Временно отключено
+    significant_advantage = 0
     string = string.split(" ")
     string = string[len(string) - 1]
     print(string)
@@ -239,7 +240,8 @@ def instant_report(bot, update, user_data):
         return
 
     string = results.partition("{0}".format(castle))[2].partition("💰")[0]
-    significant_advantage = 1 if "😎" in string else 0
+    #significant_advantage = 1 if "😎" in string else 0          #   Временно отключено
+    significant_advantage = 0
     string = string.split(" ")
     string = string[len(string) - 1]
 
