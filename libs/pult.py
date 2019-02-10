@@ -27,7 +27,8 @@ def build_pult(twinks, castles):
     ]
     for id in list(twinks):
         twink = twinks.get(id)
-        __pult_buttons.append(InlineKeyboardButton(twink.username, callback_data='ptn {0}'.format(id)))
+        print(twink.current_castle)
+        __pult_buttons.append(InlineKeyboardButton(twink.current_castle + twink.username, callback_data='ptn {0}'.format(id)))
     menu = build_menu(__pult_buttons, 3)
     for castle_row in __castle_buttons:
         menu.append(castle_row)
@@ -56,7 +57,7 @@ def rebuild_pult(action, context):
         twinks.clear()
         for key in list(twinks_const):
             twink = twinks_const.get(key)
-            new_twink = Twink(twink.castle, twink.target, twink.username)
+            new_twink = Twink(twink.castle, twink.target, twink.username, twink.telegram_id, twink.current_castle)
             twinks.update({key : new_twink})
         for i in range(0, len(castles)):
             castles[i] = castles_const[i]

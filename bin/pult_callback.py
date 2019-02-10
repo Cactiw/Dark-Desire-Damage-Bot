@@ -64,7 +64,7 @@ def pult_ok_callback(bot, update):
     response = "Текущие цели:\n"
     for key in twinks:
         twink = twinks.get(key)
-        response += "<b>{0:<25}</b> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target)
+        response += "{3}<b>{0:<25}</b> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target, twink.current_castle)
     reply_markup = rebuild_pult("current", None)
     bot.editMessageText(chat_id=mes.chat_id, message_id=mes.message_id,
                      text=response + "\n{0}".format(datetime.datetime.now(tz=moscow_tz)), parse_mode='HTML',
