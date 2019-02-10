@@ -14,6 +14,7 @@ from work_materials.filters.filters import *
 from libs.pult import rebuild_pult
 from libs.twink import Twink
 
+from bin.pult_callback import pult, pult_callback
 
 #   Выставляем логгироввание
 console = logging.StreamHandler()
@@ -27,7 +28,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 report_by_castles = {}
-pult_status = {"twink" : -1, "target" : -1}
 
 
 
@@ -307,58 +307,6 @@ def send_mid_results(bot, job):
     send_to_mid = None
 
 
-def pult(bot, update):
-    response = "Текущие цели:\n"
-    for key in twinks:
-        twink = twinks.get(key)
-        response += "<b>{0:<25}</b> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target)
-    bot.send_message(chat_id=update.message.chat_id, text = response + "\n{0}".format(datetime.datetime.now(tz=moscow_tz)),
-                     reply_markup=rebuild_pult("default", None), parse_mode='HTML')
-
-
-def pult_twink_callback(bot, update):
-    mes = update.callback_query.message
-    id = int(update.callback_query.data.split()[1])
-    new_markup = rebuild_pult("change_twink", id)
-    pult_status.update({"twink": id})
-    edit_pult(bot=bot, chat_id=mes.chat_id, message_id=mes.message_id, reply_markup=new_markup,
-              callback_query_id=update.callback_query.id)
-
-
-def pult_castles_callback(bot, update):
-    mes = update.callback_query.message
-    new_target = int(update.callback_query.data[2:])
-    new_markup = rebuild_pult("change_target", new_target)
-    pult_status.update({ "target" : new_target })
-    edit_pult(bot = bot, chat_id=mes.chat_id, message_id=mes.message_id, reply_markup=new_markup, callback_query_id=update.callback_query.id)
-
-def pult_ok_callback(bot, update):
-    pass
-
-
-def pult_callback(bot, update):
-    data = update.callback_query.data
-    if data.find("pt") == 0:
-        pult_twink_callback(bot, update)
-        return
-    if data.find("pc") == 0:
-        pult_castles_callback(bot, update)
-        return
-    if data.find("pok") == 0:
-        pult_ok_callback(bot, update)
-        return
-
-
-def edit_pult(bot, chat_id, message_id, reply_markup, callback_query_id):
-    try:
-        bot.editMessageReplyMarkup(chat_id=chat_id, message_id=message_id, reply_markup=reply_markup)
-    except BadRequest:
-        pass
-    except TelegramError:
-        logging.error(traceback.format_exc)
-    finally:
-        bot.answerCallbackQuery(callback_query_id=callback_query_id)
-
 def inline_callback(bot, update):
     if update.callback_query.data.find("p") == 0:
         pult_callback(bot, update)
@@ -366,7 +314,7 @@ def inline_callback(bot, update):
 
 def twinks_load():
     logging.info("Loading twinks...")
-    request = "select telegram_id, username, target, castle_target from twinks"
+    request = "select telegram_id, username, target, castle_target, current_castle from twinks"
     cursor.execute(request)
     row = cursor.fetchone()
     while row:
@@ -374,7 +322,8 @@ def twinks_load():
         username = row[1]
         target = row[2]
         castle_target = row[3]
-        current = Twink(castle_target, target, username)
+        current_castle = row[4]
+        current = Twink(castle_target, target, username, telegram_id, current_castle)
         twinks.update({telegram_id : current})
         row = cursor.fetchone()
     logging.info("Complete")

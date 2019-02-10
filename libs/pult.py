@@ -59,3 +59,5 @@ def rebuild_pult(action, context):
             new_twink = Twink(twink.castle, twink.target, twink.username)
             twinks.update({key : new_twink})
         return build_pult(twinks, castles)
+    if action == "current":
+        return build_pult(twinks, castles)

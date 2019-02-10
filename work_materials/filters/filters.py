@@ -46,6 +46,7 @@ class Filter_Report(BaseFilter):
                 print("User_data is None, id =", message.from_user.id)
                 print(message.text)
                 dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start")
+                return False
             return dispatcher.user_data.get(message.from_user.id).get("status") == "results" and message.text.find("Твои результаты в бою:") != -1
 
 class FilterDDGReport(BaseFilter):
