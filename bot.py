@@ -11,8 +11,10 @@ import work_materials.globals as globals
 
 from work_materials.globals import *
 from work_materials.filters.filters import *
+
 from libs.pult import rebuild_pult
 from libs.twink import Twink
+from libs.report import Castle_report
 
 from bin.pult_callback import pult, pult_callback
 
@@ -31,22 +33,11 @@ report_by_castles = {}
 
 
 
-
-class Castle_report:
-
-    def __init__(self, castle, status, damage):
-        self.castle = castle
-        self.status = status
-        self.damage = damage
-
-    def __eq__(self, other):
-        return self.castle == other.castle
-
 def reports_clear():
     global report_by_castles
     report_by_castles.clear()
     for castle in castles:
-        current = Castle_report(castle, None, None)
+        current = Castle_report(castle, None, None, "")
         report_by_castles.update({"{0}".format(castle) : current})
     print(report_by_castles)
 
@@ -276,6 +267,10 @@ def instant_report(bot, update, user_data):
                              castle, total_attack), parse_mode='HTML')"""
 
     current_castle.damage = total_attack
+    if "Enraged" in report:
+        current_castle.warning += "🏅"
+    if "You were outplayed" in report:
+        current_castle.warning += "🔽"
     if send_to_mid is None or send_to_mid.enabled is False:
         send_to_mid = job.run_once(send_mid_results, 30)
 
@@ -293,7 +288,7 @@ def send_mid_results(bot, job):
         battle_time = datetime.datetime.combine(message_datetime.date(), datetime.time(hour=1))
         while message_datetime - battle_time >= datetime.timedelta(hours=8):
             battle_time += datetime.timedelta(hours = 8)
-    response = "Результаты битвы {0}:\n".format(battle_time)
+    response = "Результаты битвы {0}:\n".format(battle_time.strftime("%D %H:%M"))
     castles.sort(key = lambda curr:report_by_castles.get(curr).damage if report_by_castles.get(curr).damage is not None else 0, reverse=True)
     for castle in castles:
         current = report_by_castles.get(castle)
@@ -301,7 +296,7 @@ def send_mid_results(bot, job):
         if current.damage is None:
             response += "???\n"
         else:
-            response += "⚔: <b>{0:.2f}</b> k\n".format(current.damage/1000) if current.status == "failed" else "🛡: <b>{0:.2f} k</b>\n".format(current.damage/1000)
+            response += "{0}: <b>{1:.2f}</b> k  {2}\n".format("⚔" if current.status == "failed" else "🛡", current.damage/1000, current.warning)
     bot.send_message(chat_id=admin_user_id, text = response, parse_mode='HTML')
     bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
     reports_clear()
