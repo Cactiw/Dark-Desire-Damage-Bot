@@ -271,6 +271,11 @@ def instant_report(bot, update, user_data):
         current_castle.warning += "🏅"
     if "You were outplayed" in report:
         current_castle.warning += "🔽"
+    if "You were poisoned" in report:
+        current_castle.warning += "💉"
+    if gold_earned < 10:
+        current_castle.warning += "⚠️"
+
     if send_to_mid is None or send_to_mid.enabled is False:
         send_to_mid = job.run_once(send_mid_results, 30)
 
