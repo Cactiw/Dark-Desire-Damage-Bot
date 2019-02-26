@@ -86,7 +86,10 @@ def start(bot, update, user_data):
 
 def castle(bot, update, user_data):
     user_data.update(status = "selected_castle", castle = update.message.text)
-    bot.send_message(chat_id=update.message.chat_id, text="Хорошо. Теперь пришли мне форвард из @CWDigest результатов той битвы, за которую необходимо посчитать урон")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Хорошо. Теперь пришли мне форвард из @CWDigest результатов той битвы, "
+                          "за которую необходимо посчитать урон, или репорт, "
+                          "если необходимо посчитать урон за последнюю битву.")
 
 
 def results(bot, update, user_data):
@@ -147,6 +150,8 @@ def calculate_damage(bot, update, user_data):
     mes = update.message
     print("Started calculating damage")
     results = user_data.get("results")
+    if results is None:
+        results = current_battle_stats
     castle = user_data.get("castle")
     report = user_data.get("report")
     target = user_data.get("target")
@@ -192,6 +197,10 @@ def calculate_damage(bot, update, user_data):
         return
 
     bot.send_message(chat_id=update.message.chat_id, text = "Вошедший урон в {0} подсчитан, ориентировочно\n⚔: <b>{1:.2f}</b> k.\nПодсчитать заного: /start".format(castle, total_attack/1000), parse_mode='HTML')
+    pop_list = ["results", "castle", "report", "target", "report_type"]
+    for item in pop_list:
+        if item in user_data:
+            user_data.pop(item)
 
 def disable_stats_flag(bot, job):
     globals.set_stats_flag = 0

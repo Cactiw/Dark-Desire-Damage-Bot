@@ -20,7 +20,7 @@ class Filter_Instant_Report(BaseFilter):
     def filter(self, message):
         if message.text:
             if message.forward_from is not None:
-                return message.text.find("Твои результаты в бою:") != -1 and message.from_user.id in instant_report_list
+                return "Твои результаты в бою:" in message.text and message.from_user.id in instant_report_list
             return 0
 
 
@@ -44,10 +44,11 @@ class Filter_Results(BaseFilter):
 class Filter_Report(BaseFilter):
     def filter(self, message):
         if message.text:
-            if dispatcher.user_data.get(message.from_user.id) is None:
+            user_data = dispatcher.user_data.get(message.from_user.id)
+            if user_data is None:
                 dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start")
                 return False
-            return dispatcher.user_data.get(message.from_user.id).get("status") == "results" and message.text.find("Твои результаты в бою:") != -1
+            return user_data.get("status") in ["results", "selected_castle"] and "Твои результаты в бою:" in message.text
 
 class FilterDDGReport(BaseFilter):
     def filter(self, message):
