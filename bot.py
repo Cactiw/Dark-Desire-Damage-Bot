@@ -317,6 +317,27 @@ def send_mid_results(bot, job):
     send_to_mid = None
 
 
+def lilpin(bot, update):
+    mes = update.message
+    response = "Распределение целей:\n"
+    castles_will_be_attacked = []
+    for castle in castles:
+        if castle in mes.text:
+            castles_will_be_attacked.append(castle)
+    twinks_list = list(twinks.values())
+    for twink in twinks_list:
+        if twink.target == "attack":
+            for attack_castle in castles_will_be_attacked:
+                if twink.castle != attack_castle:
+                    new_castle_target = attack_castle
+                    request = "update twinks set castle_target = %s where telegram_id = %s"
+                    cursor.execute(request, (new_castle_target, twink.telegram_id))
+                    response += "Цель <b>{}{}</b> изменена на {}".format(twink.current_castle, twink.username, attack_castle)
+                    break
+    response += "\nПолные результаты смотри в /pult"
+    bot.send_message(chat_id = mes.chat_id, text = response, parse_mode = 'HTML')
+
+
 def inline_callback(bot, update):
     if update.callback_query.data.find("p") == 0:
         pult_callback(bot, update)
@@ -359,9 +380,11 @@ dispatcher.add_handler(MessageHandler(Filters.text & filter_instant_report, inst
 
 dispatcher.add_handler(CommandHandler('start', start, pass_user_data=True))
 dispatcher.add_handler(CommandHandler('pult', pult, pass_user_data=False))
+dispatcher.add_handler(MessageHandler(Filters.text & filter_lilpin, lilpin, pass_user_data=False))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_castle, castle, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_results, results, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & (filter_report | filter_ddg_report), report, pass_user_data=True))
+
 
 dispatcher.add_handler(CommandHandler('set_stats', enable_stats_flag, pass_user_data=True, filters=Filters.user(user_id=admin_user_id)))
 

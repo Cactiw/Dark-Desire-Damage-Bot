@@ -3,6 +3,8 @@ from work_materials.globals import *
 
 import work_materials.globals as globals
 
+LILPIN_ID = -1001293422180
+
 class FilterIsNotAllowed(BaseFilter):
     def filter(self, message):
         return not(message.from_user.id in admin_ids or message.from_user.id in instant_report_list)
@@ -58,8 +60,16 @@ class FilterDDGReport(BaseFilter):
                 print("User_data is None, id =", message.from_user.id)
                 print(message.text)
                 dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start")
+                return False
             return user_data.get("status") == "results" and message.text.find("DDG:") == 0
 
+
+class FilterLilpin(BaseFilter):
+    def filter(self, message):
+        if message.text:
+            return message.forward_from_chat and message.forward_from_chat.id == LILPIN_ID
+
+filter_lilpin = FilterLilpin()
 
 
 
