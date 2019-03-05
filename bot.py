@@ -282,7 +282,7 @@ def instant_report(bot, update, user_data):
         current_castle.warning += "🔽"
     if "You were poisoned" in report:
         current_castle.warning += "💉"
-    if gold_earned < 10:
+    if gold_earned < 5:
         current_castle.warning += "⚠️"
 
     if send_to_mid is None or send_to_mid.enabled is False:
