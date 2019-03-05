@@ -328,11 +328,12 @@ def lilpin(bot, update):
     for twink in twinks_list:
         if twink.target == "attack":
             for attack_castle in castles_will_be_attacked:
-                if twink.castle != attack_castle:
+                if twink.current_castle != attack_castle:
                     new_castle_target = attack_castle
                     request = "update twinks set castle_target = %s where telegram_id = %s"
                     cursor.execute(request, (new_castle_target, twink.telegram_id))
                     response += "Цель <b>{}{}</b> изменена на {}\n".format(twink.current_castle, twink.username, attack_castle)
+                    castles_will_be_attacked.remove(attack_castle)
                     break
     response += "\nПолные результаты смотри в /pult"
     bot.send_message(chat_id = mes.chat_id, text = response, parse_mode = 'HTML')
