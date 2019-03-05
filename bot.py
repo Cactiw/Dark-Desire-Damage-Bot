@@ -325,8 +325,16 @@ def lilpin(bot, update):
         if castle in mes.text:
             castles_will_be_attacked.append(castle)
     twinks_list = list(twinks.values())
+    last_castle = None
     for twink in twinks_list:
         if twink.target == "attack":
+            if not castles_will_be_attacked:
+                new_castle_target = last_castle
+                request = "update twinks set castle_target = %s where telegram_id = %s"
+                cursor.execute(request, (new_castle_target, twink.telegram_id))
+                twink.castle = last_castle
+                response += "Цель <b>{}{}</b> изменена на {}\n".format(twink.current_castle, twink.username,
+                                                                       last_castle)
             for attack_castle in castles_will_be_attacked:
                 if twink.current_castle != attack_castle:
                     new_castle_target = attack_castle
@@ -335,6 +343,7 @@ def lilpin(bot, update):
                     twink.castle = attack_castle
                     response += "Цель <b>{}{}</b> изменена на {}\n".format(twink.current_castle, twink.username, attack_castle)
                     castles_will_be_attacked.remove(attack_castle)
+                    last_castle = attack_castle
                     break
     response += "\nПолные результаты смотри в /pult"
     bot.send_message(chat_id = mes.chat_id, text = response, parse_mode = 'HTML')
