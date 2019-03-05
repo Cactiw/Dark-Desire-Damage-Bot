@@ -332,6 +332,7 @@ def lilpin(bot, update):
                     new_castle_target = attack_castle
                     request = "update twinks set castle_target = %s where telegram_id = %s"
                     cursor.execute(request, (new_castle_target, twink.telegram_id))
+                    twink.castle = attack_castle
                     response += "Цель <b>{}{}</b> изменена на {}\n".format(twink.current_castle, twink.username, attack_castle)
                     castles_will_be_attacked.remove(attack_castle)
                     break
