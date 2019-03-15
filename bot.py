@@ -324,8 +324,11 @@ def lilpin(bot, update):
     for castle in castles:
         if castle in mes.text:
             castles_will_be_attacked.append(castle)
+    print(castles_will_be_attacked)
+    #return 0
     twinks_list = list(twinks.values())
     last_castle = None
+    print(twinks_list)
     for twink in twinks_list:
         if twink.target == "attack":
             if not castles_will_be_attacked:
@@ -337,6 +340,7 @@ def lilpin(bot, update):
                                                                        last_castle)
             for attack_castle in castles_will_be_attacked:
                 if twink.current_castle != attack_castle:
+                    print(attack_castle, twink.current_castle)
                     new_castle_target = attack_castle
                     request = "update twinks set castle_target = %s where telegram_id = %s"
                     cursor.execute(request, (new_castle_target, twink.telegram_id))
