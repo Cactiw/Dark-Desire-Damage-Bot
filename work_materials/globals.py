@@ -6,9 +6,9 @@ import pytz, tzlocal, psycopg2
 updater = Updater(token=ProductionToken, request_kwargs=request_kwargs)
 dispatcher = updater.dispatcher
 
-castles = ['🍁', '☘', '🖤', '🐢', '🦇', '🌹', '🍆']
-castles_unicode = {'🍁' : '\uD83C\uDF41', '☘' : '\u2618', '🖤' : '\uD83D\uDDA4', '🐢' : '\uD83D\uDC22',
-                   '🦇' : '\uD83E\uDD87', '🌹' : '\uD83C\uDF39', '🍆' : '\uD83C\uDF46'}
+castles = ['🦇', '🍁', '☘', '🖤', '🐢', '🌹', '🍆']
+castles_unicode = {'🦇' : '\uD83E\uDD87', '🍁' : '\uD83C\uDF41', '☘' : '\u2618', '🖤' : '\uD83D\uDDA4',
+                   '🐢' : '\uD83D\uDC22', '🌹' : '\uD83C\uDF39', '🍆' : '\uD83C\uDF46'}
 
 status_default = {}
 castle_status = { "failed" : '⚔', "defended" : '🛡'}
