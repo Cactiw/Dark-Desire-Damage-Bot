@@ -190,7 +190,10 @@ def calculate_damage(bot, update, user_data):
     if target == "attack":
         total_attack = attack/gold_earned * gold_castle * (0.95 if significant_advantage else 1)
     else:
-        total_attack = gold_castle / (gold_earned / defense)
+        try:
+            total_attack = gold_castle / (gold_earned / defense)
+        except ZeroDivisionError:
+            total_attack = 0
         bot.send_message(chat_id=update.message.chat_id,
                          text="Деф {0} подсчитан, ориентировочно\n🛡: <b>{1:.2f}</b> k.\nПодсчитать заного: /start".format(
                              castle, total_attack/1000), parse_mode='HTML')
