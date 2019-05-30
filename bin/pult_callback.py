@@ -12,13 +12,13 @@ def get_pult_text(user_id=None):
             twink = twinks.get(key)
             if twink.real_account:
                 continue
-            response += "{3}<code>{0:<20}</code> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target,
+            response += "{3}<code>{0:<16}</code> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target,
                                                                          twink.current_castle)
     else:
         # Запрос на пульт для сообщения боту текущей цели атаки конкретного аккаунта
         response = "Выбранная цель:\n"
         twink = twinks.get(user_id)
-        response += "{3}<b>{0:<25}</b> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target,
+        response += "{3}<b>{0:<16}</b> {1:>10} - {2}\n".format(twink.username, twink.castle, twink.target,
                                                                twink.current_castle)
     return response
 
