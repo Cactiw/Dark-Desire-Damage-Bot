@@ -16,7 +16,8 @@ from libs.pult import rebuild_pult
 from libs.twink import Twink
 from libs.report import Castle_report
 
-from bin.pult_callback import pult, pult_callback
+from bin.pult_callback import pult, pult_callback, target_set
+from bin.service_functions import get_time_remaining_to_battle
 
 #   Выставляем логгироввание
 console = logging.StreamHandler()
@@ -28,9 +29,7 @@ log_file.setLevel(logging.ERROR)
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO, handlers=[log_file, console])
 
 
-
 report_by_castles = {}
-
 
 
 def reports_clear():
@@ -40,6 +39,7 @@ def reports_clear():
         current = Castle_report(castle, None, None, "")
         report_by_castles.update({"{0}".format(castle) : current})
     print(report_by_castles)
+
 
 """main_twink = Twink("🦇", "attack")
 test_twink = Twink("🖤", "attack")
@@ -54,7 +54,6 @@ twinks = {534572692 : test_twink, 444404089:first_twink, 536014412:second_twink,
 current_battle_stats = None
 
 
-
 def build_menu(buttons,
                n_cols,
                header_buttons=None,
@@ -67,6 +66,7 @@ def build_menu(buttons,
     return menu
 
 
+#
 
 
 def start(bot, update, user_data):
@@ -94,7 +94,9 @@ def castle(bot, update, user_data):
 
 def results(bot, update, user_data):
     user_data.update(status="results", results=update.message.text)
-    bot.send_message(chat_id=update.message.chat_id, text="Хорошо. Теперь пришли мне форвард репорта <b> мастера(!) </b> c той битвы, за которую необходимо посчитать урон", parse_mode='HTML')
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Хорошо. Теперь пришли мне форвард репорта <b> мастера(!) </b> c той битвы, "
+                          "за которую необходимо посчитать урон", parse_mode='HTML')
 
 
 def report(bot, update, user_data):
@@ -128,8 +130,11 @@ def report(bot, update, user_data):
             return
 
 
-    bot.send_message(chat_id=update.message.chat_id, text="Хорошо. Подразумевается, что при совпадении замка с репорта и указанного ранее, то это репорт с дефа, иначе - с атаки.", parse_mode='HTML')
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Хорошо. Подразумевается, что при совпадении замка с репорта и указанного ранее, то это "
+                          "репорт с дефа, иначе - с атаки.", parse_mode='HTML')
     calculate_damage(bot, update, user_data)
+
 
 def parse_cw3_report(report):
     attack = int(report.partition("⚔")[2].partition(" ")[0].partition(":")[2].partition("(")[0])
@@ -137,6 +142,7 @@ def parse_cw3_report(report):
     gold_earned = int(report.partition("💰")[2].partition(":")[2][1:].partition("\n")[0])
     return_value = [attack, defense, gold_earned]
     return return_value
+
 
 def parse_ddg_results(report):
     attack = int(report.partition("⚔")[2][1:].split()[0])
@@ -199,11 +205,14 @@ def calculate_damage(bot, update, user_data):
                              castle, total_attack/1000), parse_mode='HTML')
         return
 
-    bot.send_message(chat_id=update.message.chat_id, text = "Вошедший урон в {0} подсчитан, ориентировочно\n⚔: <b>{1:.2f}</b> k.\nПодсчитать заного: /start".format(castle, total_attack/1000), parse_mode='HTML')
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Вошедший урон в {0} подсчитан, ориентировочно\n⚔: <b>{1:.2f}</b> k.\nПодсчитать заного: "
+                          "/start".format(castle, total_attack/1000), parse_mode='HTML')
     pop_list = ["results", "castle", "report", "target", "report_type"]
     for item in pop_list:
         if item in user_data:
             user_data.pop(item)
+
 
 def disable_stats_flag(bot, job):
     globals.set_stats_flag = 0
@@ -231,11 +240,11 @@ def set_results(bot, update, user_data):
 
 def instant_report(bot, update, user_data):
     global send_to_mid
-
+    twink = twinks.get(update.message.from_user.id)
     results = current_battle_stats
-    castle = twinks.get(update.message.from_user.id).castle
+    castle = twink.castle
     report = update.message.text
-    target = twinks.get(update.message.from_user.id).target
+    target = twink.target
 
     current_castle = report_by_castles.get(castle)
     if (current_castle.status == "failed" and target == "defense") or (current_castle.status == "defended" and target == "attack"):
@@ -252,13 +261,12 @@ def instant_report(bot, update, user_data):
     gold_castle = int(string)
     if gold_castle < 0:
         gold_castle = - gold_castle
-    print(gold_castle)
-    print("attack =", report.partition("⚔")[2].partition(" ")[0][1:])
-    print(report.partition("⚔️")[2], report.partition("⚔")[2].partition(" "), report.partition("⚔")[2].partition(" ")[0], report.partition("⚔️")[2].partition(" ")[0][1:])
     parsed = parse_cw3_report(report)
     attack = parsed[0]
     defense = parsed[1]
     gold_earned = parsed[2]
+    if gold_earned < 0:
+        return
     print("report:", report)
     print("attack =", attack)
     print("defense =", defense)
@@ -278,7 +286,9 @@ def instant_report(bot, update, user_data):
                          text="Деф {0} подсчитан, ориентировочно\n🛡: <b>{1}</b>\nПодсчитать заного: /start".format(
                              castle, total_attack), parse_mode='HTML')"""
 
-    current_castle.damage = total_attack
+    if current_castle.damage is None:
+        current_castle.damage = []
+    current_castle.damage.append(total_attack)
     if "Enraged" in report:
         current_castle.warning += "🏅"
     if "You were outplayed" in report:
@@ -288,34 +298,40 @@ def instant_report(bot, update, user_data):
     if gold_earned < 5:
         current_castle.warning += "⚠️"
 
+    if twink.real_account:
+        twink.target_set = True
+
     if send_to_mid is None or send_to_mid.enabled is False:
         send_to_mid = job.run_once(send_mid_results, 30)
 
-    #bot.send_message(chat_id=update.message.chat_id, text = "Вошедший урон в {0} подсчитан, ориентировочно\n⚔: <b>{1}</b>\nПодсчитать заного: /start".format(castle, total_attack), parse_mode='HTML')
+    # bot.send_message(chat_id=update.message.chat_id, text = "Вошедший урон в {0} подсчитан, ориентировочно\n⚔:
+    # <b>{1}</b>\nПодсчитать заного: /start".format(castle, total_attack), parse_mode='HTML')
 
 
 def send_mid_results(bot, job):
     global send_to_mid
     message_datetime = datetime.datetime.now(tz=moscow_tz).replace(tzinfo=None)
-    time = message_datetime - message_datetime.replace(hour = 0, minute = 0, second = 0, microsecond = 0)
-    if time < datetime.timedelta(hours=1):  #   Дневная битва прошлого дня
+    time = message_datetime - message_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+    if time < datetime.timedelta(hours=1):  # Дневная битва прошлого дня
         message_datetime -= datetime.timedelta(days=1)
-        battle_time = message_datetime.replace(hour = 17, minute = 0, second = 0, microsecond = 0)
+        battle_time = message_datetime.replace(hour=17, minute=0, second=0, microsecond=0)
     else:
         battle_time = datetime.datetime.combine(message_datetime.date(), datetime.time(hour=1))
         while message_datetime - battle_time >= datetime.timedelta(hours=8):
             battle_time += datetime.timedelta(hours = 8)
     response = "Результаты битвы {0}:\n".format(battle_time.strftime("%D %H:%M"))
-    castles.sort(key = lambda curr:report_by_castles.get(curr).damage if report_by_castles.get(curr).damage is not None else 0, reverse=True)
+    castles.sort(key=lambda curr: report_by_castles.get(curr).damage if report_by_castles.get(curr).damage is not None else 0, reverse=True)
     for castle in castles:
         current = report_by_castles.get(castle)
-        response += "{0} {1} ".format(current.castle, castle_status.get(current.status))
-        if current.damage is None:
-            response += "???\n"
+        if current.damage is None or not current.damage:
+            response += "{0} {1} ???\n".format(current.castle, castle_status.get(current.status))
         else:
-            response += "{0}: <b>{1:.2f}</b> k  {2}\n".format("⚔" if current.status == "failed" else "🛡", current.damage/1000, current.warning)
-    bot.send_message(chat_id=admin_user_id, text = response, parse_mode='HTML')
-    bot.send_message(chat_id=stats_send_id, text = response, parse_mode='HTML')
+            for stats in current.damage:
+                response += "{0} {1} ".format(current.castle, castle_status.get(current.status))
+                response += "{0}: <b>{1:.2f}</b> k  {2}\n".format("⚔" if current.status == "failed" else "🛡",
+                                                                  stats/1000, current.warning)
+    bot.send_message(chat_id=admin_user_id, text=response, parse_mode='HTML')
+    bot.send_message(chat_id=stats_send_id, text=response, parse_mode='HTML')
     reports_clear()
     send_to_mid = None
 
@@ -352,10 +368,18 @@ def lilpin(bot, update):
     bot.send_message(chat_id = mes.chat_id, text = response, parse_mode = 'HTML')
 
 
+def target_set_check(bot, job):
+    twink = job.context[0]
+    if twink.target_set:
+        return
+    target_set(bot, twink.telegram_id)
+
+
 def inline_callback(bot, update):
     if update.callback_query.data.find("p") == 0:
         pult_callback(bot, update)
         return
+
 
 def twinks_load():
     logging.info("Loading twinks...")
@@ -374,26 +398,38 @@ def twinks_load():
     logging.info("Complete")
 
 
+def real_accounts_jobs_start():
+    for id, twink in list(twinks.items()):
+        if twink.real_account:
+            job.run_once(interval=get_time_remaining_to_battle(), callback=target_set_check, context=(twink,))
+
+
 def skip(bot, update):
-    logging.info("skipped message from user @{0}, user id = {1}".format(update.message.from_user.username, update.message.from_user.id))
+    logging.info("skipped message from user @{0}, user id = {1}".format(update.message.from_user.username,
+                                                                        update.message.from_user.id))
     bot.send_message(chat_id=admin_user_id, text = "skipped message from user @{0}, "
                                                    "user id = {1}".format(update.message.from_user.username,
                                                                           update.message.from_user.id))
     return 0
 
+
 def unknown_text(bot, update, user_data):
-    bot.send_message(chat_id=update.message.chat_id, text="Некорректный ввод. Результаты битвы должны быть форвардом из @CWDigest, репорт - форвардом из @ChatWarsBot, замок - строго, как задано на кнопке. При ошибке попробуйте начать сначала: /start")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Некорректный ввод. Результаты битвы должны быть форвардом из @CWDigest, репорт - форвардом "
+                          "из @ChatWarsBot, замок - строго, как задано на кнопке. При ошибке попробуйте начать "
+                          "сначала: /start")
 
 
+#
 
 dispatcher.add_handler(MessageHandler(filter_is_not_allowed, skip))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_set_results, set_results, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_instant_report, instant_report, pass_user_data=True))
 
 
-
 dispatcher.add_handler(CommandHandler('start', start, pass_user_data=True))
 dispatcher.add_handler(CommandHandler('pult', pult, pass_user_data=False))
+dispatcher.add_handler(CommandHandler('target', target_set, pass_user_data=False))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_lilpin, lilpin, pass_user_data=False))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_castle, castle, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_results, results, pass_user_data=True))
@@ -411,6 +447,7 @@ dispatcher.add_handler(MessageHandler(Filters.text, unknown_text, pass_user_data
 
 reports_clear()
 twinks_load()
+real_accounts_jobs_start()
 updater.start_polling(clean=False)
 job = updater.job_queue
 

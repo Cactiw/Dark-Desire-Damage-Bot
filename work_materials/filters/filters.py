@@ -26,13 +26,12 @@ class Filter_Instant_Report(BaseFilter):
             return 0
 
 
-
-
 class Filter_Castle(BaseFilter):
     def filter(self, message):
         if message.text:
             user_data = dispatcher.user_data.get(message.from_user.id)
-            return message.text in castles and user_data and user_data.get("status") == "start"
+            return message.text in castles and user_data  # and user_data.get("status") == "start"
+
 
 class Filter_Results(BaseFilter):
     def filter(self, message):
@@ -43,6 +42,7 @@ class Filter_Results(BaseFilter):
                 return message.forward_from_chat.id == -1001391784649 and user_data and user_data.get("status") == "selected_castle"
             return 0
 
+
 class Filter_Report(BaseFilter):
     def filter(self, message):
         if message.text:
@@ -51,6 +51,7 @@ class Filter_Report(BaseFilter):
                 dispatcher.bot.send_message(chat_id=message.from_user.id, text="Произошла ошибка, попробуйте нажать /start")
                 return False
             return user_data.get("status") in ["results", "selected_castle"] and "Твои результаты в бою:" in message.text
+
 
 class FilterDDGReport(BaseFilter):
     def filter(self, message):
