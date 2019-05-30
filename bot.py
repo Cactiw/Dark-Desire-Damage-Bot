@@ -383,7 +383,7 @@ def inline_callback(bot, update):
 
 def twinks_load():
     logging.info("Loading twinks...")
-    request = "select telegram_id, username, target, castle_target, current_castle from twinks"
+    request = "select telegram_id, username, target, castle_target, current_castle, real_account from twinks"
     cursor.execute(request)
     row = cursor.fetchone()
     while row:
@@ -392,7 +392,8 @@ def twinks_load():
         target = row[2]
         castle_target = row[3]
         current_castle = row[4]
-        current = Twink(castle_target, target, username, telegram_id, current_castle)
+        real_account = row[5]
+        current = Twink(castle_target, target, username, telegram_id, current_castle, real_account=real_account)
         twinks.update({telegram_id : current})
         row = cursor.fetchone()
     logging.info("Complete")
@@ -401,7 +402,7 @@ def twinks_load():
 def real_accounts_jobs_start():
     for id, twink in list(twinks.items()):
         if twink.real_account:
-            job.run_once(interval=get_time_remaining_to_battle(), callback=target_set_check, context=(twink,))
+            job.run_once(when=get_time_remaining_to_battle(), callback=target_set_check, context=(twink,))
 
 
 def skip(bot, update):
@@ -447,9 +448,10 @@ dispatcher.add_handler(MessageHandler(Filters.text, unknown_text, pass_user_data
 
 reports_clear()
 twinks_load()
-real_accounts_jobs_start()
 updater.start_polling(clean=False)
 job = updater.job_queue
+real_accounts_jobs_start()
+
 
 send_to_mid = None
 

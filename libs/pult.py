@@ -21,6 +21,7 @@ class Pult:
             new_twink = Twink(twink.castle, twink.target, twink.username, twink.telegram_id, twink.current_castle,
                               twink.real_account)
             self.twinks.update({key: new_twink})
+        print("self.twinks =", self.twinks)
 
         Pult.pults.update({self.chat_id: self})
 
@@ -51,6 +52,8 @@ def build_pult(pult):
             InlineKeyboardButton("🆗 Подтвердить", callback_data="pok"),
         ]
     ]
+    print(pult.real_account)
+    print(twinks)
     if not pult.real_account:
         for id in list(twinks):
             twink = twinks.get(id)
@@ -86,8 +89,6 @@ def rebuild_pult(action, context, pult):
         return new_markup
 
     if action == "default":
-        twinks.clear()
-
         for i in range(0, len(castles)):
             castles[i] = castles_const[i]
         return build_pult(pult)
