@@ -57,6 +57,8 @@ def build_pult(pult):
     if not pult.real_account:
         for id in list(twinks):
             twink = twinks.get(id)
+            if twink.real_account:
+                continue
             print(twink.current_castle)
             __pult_buttons.append(InlineKeyboardButton(twink.current_castle + twink.username, callback_data='ptn {0}'.format(id)))
         menu = build_menu(__pult_buttons, 3)
