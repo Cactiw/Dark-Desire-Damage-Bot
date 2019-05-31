@@ -71,6 +71,8 @@ def build_pult(pult):
 
 
 def rebuild_pult(action, context, pult):
+    if pult is None:
+        pult = Pult(0, 0)
     twinks = pult.twinks
     castles = pult.castles
     if action == "change_twink":
@@ -91,7 +93,6 @@ def rebuild_pult(action, context, pult):
         return new_markup
 
     if action == "default":
-        temp_pult = Pult(0, 0)
-        return build_pult(temp_pult)
+        return build_pult(pult)
     if action == "current":
         return build_pult(pult)
