@@ -41,9 +41,9 @@ def target_set(bot, update):
     if twink is None:
         bot.send_message(chat_id=user_id, text="Ошибка. Вы зарегистрированы?")
         return
-    pult = Pult(update.message.chat_id, update.message.message_id, real_account=True)
-    bot.send_message(chat_id=user_id, text=get_pult_text(user_id=user_id),
-                     reply_markup=rebuild_pult("default", None, pult), parse_mode='HTML')
+    message = bot.send_message(chat_id=user_id, text=get_pult_text(user_id=user_id),
+                               reply_markup=rebuild_pult("default", None, None), parse_mode='HTML')
+    pult = Pult(message.chat_id, message.message_id, real_account=True)
 
 
 def pult_twink_callback(bot, update):

@@ -91,8 +91,7 @@ def rebuild_pult(action, context, pult):
         return new_markup
 
     if action == "default":
-        for i in range(0, len(castles)):
-            castles[i] = castles_const[i]
-        return build_pult(pult)
+        temp_pult = Pult(0, 0)
+        return build_pult(temp_pult)
     if action == "current":
         return build_pult(pult)
