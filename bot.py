@@ -350,6 +350,8 @@ def lilpin(bot, update):
     twinks_list = list(twinks.values())
     last_castle = None
     for twink in twinks_list:
+        if twink.real_account:
+            continue
         if twink.target == "attack":
             if not castles_will_be_attacked:
                 new_castle_target = last_castle
