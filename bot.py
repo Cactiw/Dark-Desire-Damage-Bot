@@ -440,6 +440,8 @@ dispatcher.add_handler(MessageHandler(Filters.text & filter_castle, castle, pass
 dispatcher.add_handler(MessageHandler(Filters.text & filter_results, results, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & (filter_report | filter_ddg_report), report, pass_user_data=True))
 
+dispatcher.add_handler(MessageHandler(Filters.text & filter_instant_real_report, instant_report, pass_user_data=True))
+
 
 dispatcher.add_handler(CommandHandler('set_stats', enable_stats_flag, pass_user_data=True, filters=Filters.user(user_id=admin_user_id)))
 

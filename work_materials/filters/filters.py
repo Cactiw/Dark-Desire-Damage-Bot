@@ -26,6 +26,14 @@ class Filter_Instant_Report(BaseFilter):
             return 0
 
 
+class Filter_Instant_Real_Report(BaseFilter):
+    def filter(self, message):
+        if message.text:
+            if message.forward_from is not None:
+                return "Твои результаты в бою:" in message.text and message.from_user.id in list(twinks)
+            return 0
+
+
 class Filter_Castle(BaseFilter):
     def filter(self, message):
         if message.text:
@@ -83,3 +91,4 @@ filter_ddg_report = FilterDDGReport()
 
 filter_set_results = Filter_Set_Results()
 filter_instant_report = Filter_Instant_Report()
+filter_instant_real_report = Filter_Instant_Real_Report()
