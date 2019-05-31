@@ -27,7 +27,7 @@ def pult(bot, update):
     pult = Pult(update.message.chat_id, update.message.message_id)
     pult.status.update({"twink": -1, "target": -1})
     response = get_pult_text(user_id=None)
-    bot.send_message(chat_id=update.message.chat_id, text = response + "\n{0}".format(datetime.datetime.now(tz=moscow_tz)),
+    bot.send_message(chat_id=update.message.chat_id, text=response + "\n{0}".format(datetime.datetime.now(tz=moscow_tz)),
                      reply_markup=rebuild_pult("default", None, pult), parse_mode='HTML')
 
 
@@ -100,6 +100,8 @@ def pult_ok_callback(bot, update):
     cursor.execute(request, (new_target, new_castle_target, twink.telegram_id))
     twink.target = new_target
     twink.castle = new_castle_target
+    if twink.real_account:
+        twink.target_set = True
     response = get_pult_text(user_id=pult.chat_id if pult.real_account else None)
     reply_markup = rebuild_pult("current", None, pult)
     bot.editMessageText(chat_id=mes.chat_id, message_id=mes.message_id,

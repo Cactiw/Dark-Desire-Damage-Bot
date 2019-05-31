@@ -26,7 +26,8 @@ console.setLevel(logging.INFO)
 log_file = logging.FileHandler(filename='error.log', mode='a')
 log_file.setLevel(logging.ERROR)
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO, handlers=[log_file, console])
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO,
+                    handlers=[log_file, console])
 
 
 report_by_castles = {}
@@ -128,7 +129,6 @@ def report(bot, update, user_data):
         if mes.text.find("🏅") != -1 or mes.text.find("🔱") != -1:
             bot.send_message(chat_id=update.message.chat_id, text="Репорт с дефа не должен содержать медальку, или GA")
             return
-
 
     bot.send_message(chat_id=update.message.chat_id,
                      text="Хорошо. Подразумевается, что при совпадении замка с репорта и указанного ранее, то это "
@@ -320,7 +320,8 @@ def send_mid_results(bot, job):
         while message_datetime - battle_time >= datetime.timedelta(hours=8):
             battle_time += datetime.timedelta(hours = 8)
     response = "Результаты битвы {0}:\n".format(battle_time.strftime("%D %H:%M"))
-    castles.sort(key=lambda curr: report_by_castles.get(curr).damage if report_by_castles.get(curr).damage is not None else 0, reverse=True)
+    castles.sort(key=lambda curr: report_by_castles.get(curr).damage[0] if report_by_castles.get(curr).damage else 0,
+                 reverse=True)
     for castle in castles:
         current = report_by_castles.get(castle)
         if current.damage is None or not current.damage:
@@ -334,6 +335,9 @@ def send_mid_results(bot, job):
     bot.send_message(chat_id=stats_send_id, text=response, parse_mode='HTML')
     reports_clear()
     send_to_mid = None
+    for twink in list(twinks.values()):
+        if twink.real_account:
+            twink.target_set = False
 
 
 def lilpin(bot, update):
