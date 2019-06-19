@@ -5,9 +5,17 @@ import work_materials.globals as globals
 
 LILPIN_ID = -1001293422180
 
+
 class FilterIsNotAllowed(BaseFilter):
     def filter(self, message):
+        return not(message.from_user.id in admin_ids or message.from_user.id in instant_report_list or
+                   message.from_user.id in mid_list)
+
+
+class FilterIsNotAllowedFull(BaseFilter):
+    def filter(self, message):
         return not(message.from_user.id in admin_ids or message.from_user.id in instant_report_list)
+
 
 class Filter_Set_Results(BaseFilter):
     def filter(self, message):
@@ -78,11 +86,11 @@ class FilterLilpin(BaseFilter):
         if message.text:
             return message.forward_from_chat and message.forward_from_chat.id == LILPIN_ID
 
+
 filter_lilpin = FilterLilpin()
 
-
-
 filter_is_not_allowed = FilterIsNotAllowed()
+filter_is_not_allowed_full = FilterIsNotAllowedFull()
 
 filter_castle = Filter_Castle()
 filter_results = Filter_Results()

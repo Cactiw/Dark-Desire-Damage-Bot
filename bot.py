@@ -435,12 +435,17 @@ dispatcher.add_handler(MessageHandler(Filters.text & filter_instant_report, inst
 
 
 dispatcher.add_handler(CommandHandler('start', start, pass_user_data=True))
-dispatcher.add_handler(CommandHandler('pult', pult, pass_user_data=False))
-dispatcher.add_handler(CommandHandler('target', target_set, pass_user_data=False))
-dispatcher.add_handler(MessageHandler(Filters.text & filter_lilpin, lilpin, pass_user_data=False))
+
 dispatcher.add_handler(MessageHandler(Filters.text & filter_castle, castle, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & filter_results, results, pass_user_data=True))
 dispatcher.add_handler(MessageHandler(Filters.text & (filter_report | filter_ddg_report), report, pass_user_data=True))
+
+dispatcher.add_handler(MessageHandler(filter_is_not_allowed_full, skip))
+
+
+dispatcher.add_handler(CommandHandler('pult', pult, pass_user_data=False))
+dispatcher.add_handler(CommandHandler('target', target_set, pass_user_data=False))
+dispatcher.add_handler(MessageHandler(Filters.text & filter_lilpin, lilpin, pass_user_data=False))
 
 dispatcher.add_handler(MessageHandler(Filters.text & filter_instant_real_report, instant_report, pass_user_data=True))
 
